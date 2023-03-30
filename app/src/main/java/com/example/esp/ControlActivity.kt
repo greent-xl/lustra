@@ -4,14 +4,12 @@ import android.bluetooth.BluetoothManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.example.esp.databinding.ActivityControlBinding
 
 class ControlActivity : AppCompatActivity(), ReceiveThread.Listener {
@@ -19,8 +17,6 @@ class ControlActivity : AppCompatActivity(), ReceiveThread.Listener {
     private lateinit var actListLauncher: ActivityResultLauncher<Intent>
     lateinit var btConnection: BtConnection
     private var listItem: ListItem? = null
-    private val TAG = "PermissionDemo"
-    private val RECORD_REQUEST_CODE = 101
     private val PERMISSIONS_STORAGE = arrayOf<String>(
         android.Manifest.permission.READ_EXTERNAL_STORAGE,
         android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -64,37 +60,6 @@ class ControlActivity : AppCompatActivity(), ReceiveThread.Listener {
         val btManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
         val btAdapter = btManager.adapter
         btConnection = BtConnection(btAdapter, this)
-    }
-
-    private fun setupPermissions() {
-        val permission = ContextCompat.checkSelfPermission(this,
-            android.Manifest.permission.BLUETOOTH)
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            Log.i(TAG, "Permission to bluetooth denied")
-            makeRequest()
-        }
-    }
-
-    private fun makeRequest() {
-        ActivityCompat.requestPermissions(this,
-            arrayOf(android.Manifest.permission.BLUETOOTH),
-            RECORD_REQUEST_CODE)
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int,
-                                             permissions: Array<String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode) {
-            RECORD_REQUEST_CODE -> {
-
-                if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-
-                    Log.i(TAG, "Permission has been denied by user")
-                } else {
-                    Log.i(TAG, "Permission has been granted by user")
-                }
-            }
-        }
     }
 
     private fun checkPermissions() {
