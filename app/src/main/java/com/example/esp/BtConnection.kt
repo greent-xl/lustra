@@ -1,6 +1,8 @@
 package com.example.esp
 
 import android.bluetooth.BluetoothAdapter
+import java.io.File
+import java.io.InputStream
 
 class BtConnection(private val adapter: BluetoothAdapter, private val listener: ReceiveThread.Listener) {
     lateinit var cTread: ConnectThread
@@ -13,8 +15,14 @@ class BtConnection(private val adapter: BluetoothAdapter, private val listener: 
             }
         }
     }
-    fun sendMessage(message: String){
-        cTread.rThread.sendMessage(message.toByteArray())
+
+    fun PngtoByte(fe: String): ByteArray {
+        val inputStream: InputStream = File(fe).inputStream()
+        val bytes = inputStream.readBytes()
+        return bytes
     }
 
+    fun sendMessage(message: String){
+        cTread.rThread.sendMessage(PngtoByte(message))
+    }
 }

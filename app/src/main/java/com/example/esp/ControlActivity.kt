@@ -11,6 +11,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.esp.databinding.ActivityControlBinding
+import com.example.learning.R
+import com.example.learning.databinding.ActivityControlBinding
 
 class ControlActivity : AppCompatActivity(), ReceiveThread.Listener {
     private lateinit var binding: ActivityControlBinding
@@ -48,10 +50,10 @@ class ControlActivity : AppCompatActivity(), ReceiveThread.Listener {
         init()
         binding.apply {
             bA.setOnClickListener{
-                btConnection.sendMessage("A")
+                btConnection.sendMessage("![](../../../../res/drawable/fff_scaled.jpg)")
             }
             bB.setOnClickListener {
-                btConnection.sendMessage("B")
+                btConnection.sendMessage("![](../../../../res/drawable/pussy_scaled.png)")
             }
         }
     }
