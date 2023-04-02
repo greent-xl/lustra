@@ -1,8 +1,7 @@
 package com.example.esp
 
 import android.bluetooth.BluetoothAdapter
-import java.io.File
-import java.io.InputStream
+import android.content.res.AssetManager
 
 class BtConnection(private val adapter: BluetoothAdapter, private val listener: ReceiveThread.Listener) {
     lateinit var cTread: ConnectThread
@@ -17,7 +16,11 @@ class BtConnection(private val adapter: BluetoothAdapter, private val listener: 
     }
 
     fun PngtoByte(fe: String): ByteArray {
-        val inputStream: InputStream = File(fe).inputStream()
+        //val inputStream: InputStream = File(fe).inputStream()
+        val context = ControlActivity.appContext
+        val assetManager: AssetManager = context.assets
+        val inputStream = assetManager.open(fe)
+        //val inputStream: InputStream =
         val bytes = inputStream.readBytes()
         return bytes
     }

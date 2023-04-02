@@ -1,6 +1,7 @@
 package com.example.esp
 
 import android.bluetooth.BluetoothManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -11,8 +12,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.esp.databinding.ActivityControlBinding
-import com.example.learning.R
-import com.example.learning.databinding.ActivityControlBinding
+//import com.example.learning.R
+//import com.example.learning.databinding.ActivityControlBinding
 
 class ControlActivity : AppCompatActivity(), ReceiveThread.Listener {
     private lateinit var binding: ActivityControlBinding
@@ -40,9 +41,15 @@ class ControlActivity : AppCompatActivity(), ReceiveThread.Listener {
             android.Manifest.permission.READ_PHONE_STATE
         )
     }*/
+    companion object {
+
+        lateinit  var appContext: Context
+
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        appContext = this@ControlActivity
         binding = ActivityControlBinding.inflate(layoutInflater)
         setContentView(binding.root)
         onBtListResult()
@@ -50,10 +57,10 @@ class ControlActivity : AppCompatActivity(), ReceiveThread.Listener {
         init()
         binding.apply {
             bA.setOnClickListener{
-                btConnection.sendMessage("![](../../../../res/drawable/fff_scaled.jpg)")
+                btConnection.sendMessage("fff_scaled.jpg")
             }
             bB.setOnClickListener {
-                btConnection.sendMessage("![](../../../../res/drawable/pussy_scaled.png)")
+                btConnection.sendMessage("pussy_scaled.png")
             }
         }
     }
