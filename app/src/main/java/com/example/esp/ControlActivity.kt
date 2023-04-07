@@ -1,16 +1,26 @@
 package com.example.esp
 
+import android.app.Activity
 import android.bluetooth.BluetoothManager
+import android.bluetooth.BluetoothSocket
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.widget.EditText
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.example.esp.databinding.ActivityControlBinding
 //import com.example.learning.R
 //import com.example.learning.databinding.ActivityControlBinding
@@ -20,6 +30,70 @@ class ControlActivity : AppCompatActivity(), ReceiveThread.Listener {
     private lateinit var actListLauncher: ActivityResultLauncher<Intent>
     lateinit var btConnection: BtConnection
     private var listItem: ListItem? = null
+
+
+    var pickedPhoto : Uri? = null
+    var inputText : EditText? = null
+
+    /*fun pickedPhoto (){
+        if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE)
+            != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),
+                1)
+        }else{
+            val galleryIntext = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+            startActivityForResult(galleryIntext, 2)
+            val imageUri = galleryIntext.data
+            val imagePath = getPathFromUri(imageUri)
+            btConnection.sendMessage(imageUri.toString())
+        }
+    }
+
+    fun getPathFromUri(uri: Uri): String? {
+        val projection = arrayOf(MediaStore.Images.Media.DATA)
+        val cursor = contentResolver.query(uri, projection, null, null, null)
+        val columnIndex = cursor?.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+        cursor?.moveToFirst()
+        val path = cursor?.getString(columnIndex ?: return null)
+        cursor?.close()
+        return path
+    }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 2 && resultCode == Activity.RESULT_OK && data != null) {
+            data?.data?.let { uri ->
+                val imagePath = getPathFromUri(uri)
+                // использование imagePath
+            }
+        }
+    }*/
+    fun getPathFromUri(uri: Uri): String? {
+        val projection = arrayOf(MediaStore.Images.Media.DATA)
+        val cursor = contentResolver.query(uri, projection, null, null, null)
+        val columnIndex = cursor?.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+        cursor?.moveToFirst()
+        val path = cursor?.getString(columnIndex ?: return null)
+        cursor?.close()
+        return path
+    }
+
+    fun pickedPhoto (){
+        if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE)
+            != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),
+                1)
+        }else{
+            val galleryIntext = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+            startActivityForResult(galleryIntext, 2)
+            pickedPhoto = galleryIntext.data
+            val imagePath = pickedPhoto?.let { getPathFromUri(it) }
+            if (imagePath != null) {
+                btConnection.sendMessagePic(imagePath)
+            }
+        }
+    }
+
+
     private val PERMISSIONS_STORAGE = arrayOf<String>(
         android.Manifest.permission.READ_EXTERNAL_STORAGE,
         android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -42,9 +116,7 @@ class ControlActivity : AppCompatActivity(), ReceiveThread.Listener {
         )
     }*/
     companion object {
-
         lateinit  var appContext: Context
-
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,12 +129,18 @@ class ControlActivity : AppCompatActivity(), ReceiveThread.Listener {
         init()
         binding.apply {
             bA.setOnClickListener{
-                btConnection.sendMessage("fff_scaled.jpg")
+                pickedPhoto()
             }
             bB.setOnClickListener {
-                btConnection.sendMessage("pussy_scaled.png")
+                btConnection.sendMessageText("pussy_scaled.png")
             }
         }
+        sendText()
+    }
+    fun sendText() : String {
+        val editText:EditText = findViewById(R.id.InputText)
+        val message = editText.text.toString()
+        return message
     }
 
     private fun init(){

@@ -25,7 +25,22 @@ class BtConnection(private val adapter: BluetoothAdapter, private val listener: 
         return bytes
     }
 
-    fun sendMessage(message: String){
+
+
+    fun sendT(message: String) : ByteArray {
+        return message.toByteArray()
+    }
+
+    fun sendMessagePic(message: String){
+        cTread.rThread.sendMessage("0".toByteArray())
+        cTread.rThread.sendMessage("jk".toByteArray())
         cTread.rThread.sendMessage(PngtoByte(message))
+        cTread.rThread.sendMessage("jk".toByteArray())
+    }
+    fun sendMessageText(message: String){
+        cTread.rThread.sendMessage("1".toByteArray())
+        cTread.rThread.sendMessage("jk".toByteArray())
+        cTread.rThread.sendMessage(sendText())
+        cTread.rThread.sendMessage("jk".toByteArray())
     }
 }
