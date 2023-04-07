@@ -1,18 +1,26 @@
 package com.example.esp
 
 import android.bluetooth.BluetoothManager
+import android.content.Context
 import android.content.Intent
-import android.os.Build.VERSION_CODES.P
-import androidx.appcompat.app.AppCompatActivity
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.EditText
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.example.esp.databinding.ActivityControlBinding
-import com.example.esp.databinding.ActivityMainBinding
-import java.util.UUID
+import java.io.IOException
+
+//import com.example.learning.R
+//import com.example.learning.databinding.ActivityControlBinding
 
 class ControlActivity : AppCompatActivity(), ReceiveThread.Listener {
     private lateinit var binding: ActivityControlBinding
@@ -20,26 +28,110 @@ class ControlActivity : AppCompatActivity(), ReceiveThread.Listener {
     lateinit var btConnection: BtConnection
     private var listItem: ListItem? = null
 
+
+    var pickedPhoto : Uri? = null
+    var inputText : EditText? = null
+
+    fun getPathFromUri(uri: Uri): String? {
+        val projection = arrayOf(MediaStore.Images.Media.DATA)
+        val cursor = contentResolver.query(uri, projection, null, null, null)
+        val columnIndex = cursor?.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+        cursor?.moveToFirst()
+        val path = cursor?.getString(columnIndex ?: return null)
+        cursor?.close()
+        return path
+    }
+
+    fun pickedPhoto (){
+        if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE)
+            != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),
+                1)
+        }else{
+            val galleryIntext = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+            startActivityForResult(galleryIntext, 2)
+            pickedPhoto = galleryIntext.data
+            val imagePath = pickedPhoto?.let { getPathFromUri(it) }
+            if (imagePath != null) {
+                btConnection.sendMessagePic(imagePath)
+            }
+        }
+    }
+
+
+    private val PERMISSIONS_STORAGE = arrayOf<String>(
+        android.Manifest.permission.READ_EXTERNAL_STORAGE,
+        android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        android.Manifest.permission.ACCESS_FINE_LOCATION,
+        android.Manifest.permission.ACCESS_COARSE_LOCATION,
+        android.Manifest.permission.ACCESS_LOCATION_EXTRA_COMMANDS,
+        android.Manifest.permission.BLUETOOTH,
+        android.Manifest.permission.BLUETOOTH_PRIVILEGED
+    )
+    private val PERMISSIONS_LOCATION = arrayOf<String>(
+        android.Manifest.permission.ACCESS_FINE_LOCATION,
+        android.Manifest.permission.ACCESS_COARSE_LOCATION,
+        android.Manifest.permission.ACCESS_LOCATION_EXTRA_COMMANDS,
+        android.Manifest.permission.BLUETOOTH_PRIVILEGED
+    )
+    /*companion object {
+        var PERMISSIONS = arrayOf(
+            android.Manifest.permission.BLUETOOTH,
+            android.Manifest.permission.READ_PHONE_STATE
+        )
+    }*/
+    companion object {
+        lateinit  var appContext: Context
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        appContext = this@ControlActivity
         binding = ActivityControlBinding.inflate(layoutInflater)
         setContentView(binding.root)
         onBtListResult()
+        checkPermissions()
         init()
         binding.apply {
             bA.setOnClickListener{
-                btConnection.sendMessage("A")
+                pickedPhoto()
             }
             bB.setOnClickListener {
-                btConnection.sendMessage("B")
+                sendText()
             }
         }
+    }
+    fun sendText(){
+        val editText:EditText = findViewById(R.id.InputText)
+        val message = editText.text.toString()
+        btConnection.sendMessageText(message)
     }
 
     private fun init(){
         val btManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
         val btAdapter = btManager.adapter
         btConnection = BtConnection(btAdapter, this)
+    }
+
+    private fun checkPermissions() {
+        val permission1 =
+            ActivityCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        val permission2 =
+            ActivityCompat.checkSelfPermission(this, android.Manifest.permission.BLUETOOTH)
+        if (permission1 != PackageManager.PERMISSION_GRANTED) {
+            // We don't have permission so prompt the user
+            ActivityCompat.requestPermissions(
+                this,
+                PERMISSIONS_STORAGE,
+                1
+            )
+        } else if (permission2 != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                this,
+                PERMISSIONS_LOCATION,
+                1
+            )
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
